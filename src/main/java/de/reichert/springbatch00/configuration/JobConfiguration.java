@@ -2,7 +2,9 @@ package de.reichert.springbatch00.configuration;
 
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.job.builder.FlowBuilder;
 import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.job.flow.Flow;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.repeat.RepeatStatus;
@@ -35,11 +37,19 @@ public class JobConfiguration {
                 .start(step1).on("COMPLETED").to(step1).end().build();
     }
 
-    @Bean
+//    @Bean
     public Job secondJob() {
         Step step0 = soutStepBuilder.getStep("s0", "hallo");
         Step step1 = soutStepBuilder.getStep("s1", "du");
-
         return new JobBuilder("secondJob", jobRepository).start(step0).next(step1).build();
+    }
+
+    @Bean
+    public Job flowJob() {
+        Step step0 = soutStepBuilder.getStep("s0", "hallo");
+        Step step1 = soutStepBuilder.getStep("s1", "du");
+        Flow flow = new FlowBuilder<Flow>("foo").start(step0).next(step1).build();
+        return new JobBuilder("flowJob", jobRepository).start(flow).end().build();
+
     }
 }
