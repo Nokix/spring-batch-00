@@ -2,9 +2,7 @@ package de.reichert.springbatch00.configuration;
 
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.job.builder.JobBuilder;
-import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.repeat.RepeatStatus;
@@ -16,6 +14,10 @@ import org.springframework.transaction.PlatformTransactionManager;
 @Configuration
 //@EnableBatchProcessing
 public class JobConfiguration {
+    @Autowired
+    private SoutStepBuilder soutStepBuilder;
+    @Autowired
+    private JobRepository jobRepository;
 
     @Bean
     public Step step1(JobRepository jobRepository,
@@ -27,9 +29,17 @@ public class JobConfiguration {
         }, transactionManager).build();
     }
 
-    @Bean
+    //@Bean
     public Job helloWorldJob(JobRepository jobRepository, Step step1) {
         return new JobBuilder("helloWorldJob", jobRepository)
-                .flow(step1).end().build();
+                .start(step1).on("COMPLETED").to(step1).end().build();
+    }
+
+    @Bean
+    public Job secondJob() {
+        Step step0 = soutStepBuilder.getStep("s0", "hallo");
+        Step step1 = soutStepBuilder.getStep("s1", "du");
+
+        return new JobBuilder("secondJob", jobRepository).start(step0).next(step1).build();
     }
 }
