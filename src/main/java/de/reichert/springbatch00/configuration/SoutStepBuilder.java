@@ -10,13 +10,14 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 @Component
 public class SoutStepBuilder {
-    private JobRepository jobRepository;
-    private PlatformTransactionManager platformTransactionManager;
+    private final JobRepository jobRepository;
+    private final PlatformTransactionManager transactionManager;
 
     @Autowired
-    public SoutStepBuilder(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+    public SoutStepBuilder(JobRepository jobRepository,
+                           PlatformTransactionManager transactionManager) {
         this.jobRepository = jobRepository;
-        this.platformTransactionManager = platformTransactionManager;
+        this.transactionManager = transactionManager;
     }
 
     public Step getStep(String name, String output) {
@@ -26,9 +27,7 @@ public class SoutStepBuilder {
                     System.out.println(chunkContext.getStepContext().getStepName()
                             + " ist ausgeführt auf Thread " + Thread.currentThread().getName());
                     return RepeatStatus.FINISHED;
-                }, platformTransactionManager)
+                }, transactionManager)
                 .build();
     }
-
-
 }

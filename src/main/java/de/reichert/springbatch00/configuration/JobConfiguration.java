@@ -5,7 +5,9 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.job.builder.FlowBuilder;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.job.flow.Flow;
+import org.springframework.batch.core.job.flow.JobExecutionDecider;
 import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.builder.JobStepBuilder;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,17 +57,51 @@ public class JobConfiguration {
 //        return new JobBuilder("flowJob", jobRepository).start(mystep).on("COMPLETED").to(flow).end().build();
     }
 
-    @Bean
-    public Job paralellFlows() {
+//    @Bean
+    public Job parallelFlows() {
         Step step0 = soutStepBuilder.getStep("s0", "hallo");
         Step step1 = soutStepBuilder.getStep("s1", "du");
         Flow flow = new FlowBuilder<Flow>("foo").start(step0).next(step1).build();
-        Step mystep0 = soutStepBuilder.getStep("s2", "Viktor");
-        Step mystep1 = soutStepBuilder.getStep("s3", "Reichert");
-        Flow myFlow = new FlowBuilder<Flow>("foo2").start(mystep0).next(mystep1).build();
+
+        Step myStep0 = soutStepBuilder.getStep("s2", "Viktor");
+        Step myStep1 = soutStepBuilder.getStep("s3", "Reichert");
+        Flow myFlow = new FlowBuilder<Flow>("foo2").start(myStep0).next(myStep1).build();
+
         return new JobBuilder("flowJob", jobRepository)
                 .start(flow)
                 .split(new SimpleAsyncTaskExecutor()).add(myFlow)
+                .end().build();
+    }
+
+//    @Bean
+    public Job decideFlow() {
+        Step stepStart = soutStepBuilder.getStep("s0", "start");
+        Step stepOdd = soutStepBuilder.getStep("s0", "odd");
+        Step stepEven = soutStepBuilder.getStep("s1", "even");
+        JobExecutionDecider decider = new OddDecider();
+
+        return new JobBuilder("deciderJob", jobRepository)
+                .start(stepStart)
+                .next(decider)
+                .from(decider).on("ODD").to(stepOdd)
+                .from(decider).on("EVEN").to(stepEven)
+                .from(stepOdd).on("*").to(decider)
+                .end().build();
+    }
+
+    @Bean
+    public Job decideFlowRepeat() {
+        Step stepStart = soutStepBuilder.getStep("start", "start");
+        Step step = soutStepBuilder.getStep("repeat", "repeating");
+        Step finished = soutStepBuilder.getStep("finished", "finished");
+        JobExecutionDecider decider = new RepeatDecider(3);
+
+        return new JobBuilder("deciderJob", jobRepository)
+                .start(stepStart)
+                .next(decider)
+                .from(decider).on("REPEAT").to(step)
+                .from(step).on("*").to(decider)
+                .from(decider).on("STOP").to(finished)
                 .end().build();
     }
 }
