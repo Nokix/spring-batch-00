@@ -11,6 +11,7 @@ import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
@@ -44,12 +45,27 @@ public class JobConfiguration {
         return new JobBuilder("secondJob", jobRepository).start(step0).next(step1).build();
     }
 
-    @Bean
+//    @Bean
     public Job flowJob() {
         Step step0 = soutStepBuilder.getStep("s0", "hallo");
         Step step1 = soutStepBuilder.getStep("s1", "du");
         Flow flow = new FlowBuilder<Flow>("foo").start(step0).next(step1).build();
-        return new JobBuilder("flowJob", jobRepository).start(flow).end().build();
+        Step mystep = soutStepBuilder.getStep("s2", "Viktor");
+        return new JobBuilder("flowJob", jobRepository).start(flow).next(mystep).end().build();
+//        return new JobBuilder("flowJob", jobRepository).start(mystep).on("COMPLETED").to(flow).end().build();
+    }
 
+    @Bean
+    public Job paralellFlows() {
+        Step step0 = soutStepBuilder.getStep("s0", "hallo");
+        Step step1 = soutStepBuilder.getStep("s1", "du");
+        Flow flow = new FlowBuilder<Flow>("foo").start(step0).next(step1).build();
+        Step mystep0 = soutStepBuilder.getStep("s2", "Viktor");
+        Step mystep1 = soutStepBuilder.getStep("s3", "Reichert");
+        Flow myFlow = new FlowBuilder<Flow>("foo2").start(mystep0).next(mystep1).build();
+        return new JobBuilder("flowJob", jobRepository)
+                .start(flow)
+                .split(new SimpleAsyncTaskExecutor()).add(myFlow)
+                .end().build();
     }
 }

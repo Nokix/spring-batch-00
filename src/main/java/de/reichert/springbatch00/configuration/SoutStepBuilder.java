@@ -23,6 +23,8 @@ public class SoutStepBuilder {
         return new StepBuilder(name, jobRepository)
                 .tasklet((contribution, chunkContext) -> {
                     System.out.println(output);
+                    System.out.println(chunkContext.getStepContext().getStepName()
+                            + " ist ausgeführt auf Thread " + Thread.currentThread().getName());
                     return RepeatStatus.FINISHED;
                 }, platformTransactionManager)
                 .build();
