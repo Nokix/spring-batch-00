@@ -16,6 +16,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import java.util.List;
+
 @Configuration
 //@EnableBatchProcessing
 public class JobConfiguration {
@@ -89,7 +91,7 @@ public class JobConfiguration {
                 .end().build();
     }
 
-    @Bean
+    //@Bean
     public Job decideFlowRepeat() {
         Step stepStart = soutStepBuilder.getStep("start", "start");
         Step step = soutStepBuilder.getStep("repeat", "repeating");
@@ -104,4 +106,11 @@ public class JobConfiguration {
                 .from(decider).on("STOP").to(finished)
                 .end().build();
     }
+
+    @Bean
+    public Job listenerJob(ListToSoutJobFactory listToSoutJobFactory) {
+        return listToSoutJobFactory.createJob(List.of("a", "b", "c", "d", "e"));
+    }
+
+
 }
