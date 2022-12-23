@@ -11,6 +11,7 @@ import org.springframework.batch.core.step.builder.JobStepBuilder;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
@@ -107,9 +108,16 @@ public class JobConfiguration {
                 .end().build();
     }
 
-    @Bean
+    //@Bean
     public Job listenerJob(ListToSoutJobFactory listToSoutJobFactory) {
         return listToSoutJobFactory.createJob(List.of("a", "b", "c", "d", "e"));
+    }
+
+    //@Bean
+    public Job parameterJob(@Value(value = "#{jobParameters['text']}") String text) {
+        return new JobBuilder("paramaterJob", jobRepository)
+                .start(soutStepBuilder.getStep("s0", text))
+                .build();
     }
 
 
