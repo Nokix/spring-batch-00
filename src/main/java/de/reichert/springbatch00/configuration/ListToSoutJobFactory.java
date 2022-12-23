@@ -7,6 +7,7 @@ import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.tasklet.TaskletStep;
+import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.support.ListItemReader;
 import org.springframework.stereotype.Component;
@@ -29,7 +30,7 @@ public class ListToSoutJobFactory {
     }
 
     public Job createJob(List<String> list) {
-        ListItemReader<String> reader = new ListItemReader<>(list);
+        ItemReader<String> reader = new IterableItemReader<String>(list); //new ListItemReader<>(list);
         ItemWriter<String> writer = chunk -> chunk.forEach(System.out::println);
 
         TaskletStep step = new StepBuilder("ReadAndWriteStep", jobRepository)

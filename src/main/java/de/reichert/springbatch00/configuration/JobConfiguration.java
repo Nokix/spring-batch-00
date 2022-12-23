@@ -108,7 +108,7 @@ public class JobConfiguration {
                 .end().build();
     }
 
-    //@Bean
+    @Bean
     public Job listenerJob(ListToSoutJobFactory listToSoutJobFactory) {
         return listToSoutJobFactory.createJob(List.of("a", "b", "c", "d", "e"));
     }
